@@ -19,5 +19,6 @@ char *s21_strrchr(const char *str, int c);
 char *s21_strstr(const char *haystack, const char *needle);
 char *s21_strtok(char *str, const char *delim);
 size_t s21_strspn(const char *str1, const char *str2);
+int s21_sprintf(char *str, const char *format, ...);
 
 #endif
