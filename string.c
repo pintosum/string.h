@@ -21,14 +21,14 @@ void *s21_memcpy(void *dest, const void *src, size_t n) {
   unsigned char *d = dest;
   while (n--)
     *d++ = *s++;
-  return (void *)d;
+  return dest;
 }
 
 void *s21_memset(void *str, int c, size_t n) {
   char *p = (char *)str;
   while (n--)
     *p++ = c;
-  return (void *)p;
+  return str;
 }
 
 char *s21_strncat(char *dest, const char *src, size_t n) {
