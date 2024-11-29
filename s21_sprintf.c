@@ -12,7 +12,7 @@ struct options {
 
 static int s21_is_digit(const char *str) {
   int ret = 0;
-  if (*str <= 57 && *str >= 48)
+  if (*str <= '9' && *str >= '0')
     ret = 1;
   return ret;
 }
@@ -23,7 +23,7 @@ static int s21_atoi(const char **str) {
   int done = 0;
   while (*ptr && !done) {
     if (s21_is_digit(ptr)) {
-      ret = ret * 10 + *ptr - 48;
+      ret = ret * 10 + *ptr - '0';
     } else {
       done = 1;
       *str = ptr;
@@ -34,12 +34,8 @@ static int s21_atoi(const char **str) {
 }
 
 static const char *s21_get_spec(const char *format, struct options *options) {
-  static struct options *opts;
-  static const char *inp;
-  if (format)
-    inp = format;
-  if (options)
-    opts = options;
+  struct options *opts;
+  const char *inp = format;
 
   s21_memset(opts, 0, sizeof(struct options));
 
@@ -53,6 +49,8 @@ static const char *s21_get_spec(const char *format, struct options *options) {
         spec++;
         opts->precision = s21_atoi(&spec);
       } else if (s21_is_digit(spec)) {
+        if(*spec == '0')
+          opts->padding = '0';
         opts->width = s21_atoi(&spec);
       } else if (*spec == 'h' || *spec == 'l') {
         opts->len = *spec;
@@ -79,7 +77,7 @@ static char *s21_sputch(char *str, int ch, struct options *opts) {
   return str;
 }
 
-static char *s21_sputdec(int dec, char *dest, struct options *opts) {
+static char *s21_sputdec(char *dest, int dec, struct options *opts) {
   int i = 0;
   int sign;
   if ((sign = dec) < 0)
@@ -97,8 +95,8 @@ static char *s21_sputdec(int dec, char *dest, struct options *opts) {
     dest[i++] = opts->padding;
   }
   int last_index = i;
+  dest[i--] = 0;
 
-  i--;
   for (int j = 0; j < i; j++, i--) {
     char temp = dest[j];
     dest[j] = dest[i];
@@ -117,10 +115,11 @@ static void s21_put_spec(char *str, va_list *args, struct options *opts) {
   switch (opts->spec) {
   case 'c':
     c = va_arg(*args, int);
-    *str = c;
+    s21_sputch(str, c, opts);
     break;
   case 'd':
     d = va_arg(*args, int);
+    s21_sputdec(str, d, opts);
     break;
   case 'f':
     f = va_arg(*args, double);
