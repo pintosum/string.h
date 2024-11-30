@@ -1,7 +1,7 @@
 #ifndef S21_STRING_H
 #define S21_STRING_H
 #define NULL (void *)0
-typedef unsigned long long size_t;
+typedef unsigned long size_t;
 
 void *s21_memchr(const void *s, int c, size_t n);
 int s21_memcmp(const void *s1, const void *s2, size_t n);

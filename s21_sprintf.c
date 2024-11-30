@@ -1,5 +1,6 @@
 #include "string.h"
 #include <stdarg.h>
+#include <wchar.h>
 
 struct options {
   unsigned char type;
@@ -66,7 +67,7 @@ static const char *parse_flags(const char *format, struct options *opts) {
   if (opts->flag_minus && opts->flag_zero)
     opts->flag_zero = 0;
 
-  if(opts->flag_zero)
+  if (opts->flag_zero)
     opts->padding = '0';
   else
     opts->padding = ' ';
@@ -180,40 +181,87 @@ static char *s21_sputdec(char *dest, long dec, struct options *opts) {
   return dest + last_index;
 }
 
-static char *s21_sputfloat(char *dest, long double point,
-                           struct options *opts) {
+static char *s21_sputuns(char *dest, unsigned long dec, struct options *opts) {
+  int i = 0;
+
+  int len = 1;
+  for (; (dec /= 10) > 0; len++)
+    ;
+
+  for (int c = len; c < opts->width && opts->flag_minus; c++) {
+    dest[i++] = opts->padding;
+  }
+
+  do {
+    dest[i++] = dec % 10 + '0';
+  } while ((dec /= 10) > 0);
+
+  while (i < opts->width && !opts->flag_minus) {
+    dest[i++] = opts->padding;
+  }
+  int last_index = i;
+  dest[i--] = 0;
+
+  for (int j = 0; j < i; j++, i--) {
+    char temp = dest[j];
+    dest[j] = dest[i];
+    dest[i] = temp;
+  }
+
+  return dest + last_index;
+}
+
+static char *s21_sputfloat(char *dest, double num, struct options *opts) {
+  if (!opts->precision)
+    opts->precision = 6;
 
   return dest;
 }
 
-static void s21_put_spec(char *str, va_list *args, struct options *opts) {
+static char *s21_sputstr(char *dest, const char *src, struct options *opts) {
+  size_t len = s21_strlen(src);
+  size_t i = 0;
+  while (i < len && i < opts->precision) {
+    *dest++ = *src++;
+    i++;
+  }
+  dest[i] = '\0';
+  return dest;
+}
+
+static char *s21_put_spec(char *str, va_list *args, struct options *opts) {
   char c;
   long ld;
-  char *s;
+  const char *s;
   double f;
   unsigned int u;
   switch (opts->type) {
   case 'c':
     c = va_arg(*args, int);
-    s21_sputch(str, c, opts);
+    str = s21_sputch(str, c, opts);
     break;
   case 'd':
     ld = va_arg(*args, long);
-    s21_sputdec(str, ld, opts);
+    str = s21_sputdec(str, ld, opts);
     break;
   case 'f':
     f = va_arg(*args, long double);
-    s21_sputfloat(str, f, opts);
+    str = s21_sputfloat(str, f, opts);
     break;
   case 's':
-    s = va_arg(*args, char *);
+    if (opts->len != 'l') {
+      s = va_arg(*args, char *);
+      str = s21_sputstr(str, s, opts);
+    }
     break;
   case 'u':
     u = va_arg(*args, unsigned);
+    str = s21_sputuns(str, u, opts);
     break;
   default:
     break;
   }
+  return str;
 }
 
 int s21_sprintf(char *str, const char *format, ...) {
