@@ -1,7 +1,13 @@
 #ifndef S21_STRING_H
 #define S21_STRING_H
+
+#ifndef NULL
 #define NULL (void *)0
-typedef unsigned long long size_t;
+#endif  // NULL
+
+#ifndef size_t
+typedef unsigned long int size_t;
+#endif  // SIZE_T
 
 void *s21_memchr(const void *s, int c, size_t n);
 int s21_memcmp(const void *s1, const void *s2, size_t n);
@@ -20,4 +26,4 @@ char *s21_strstr(const char *haystack, const char *needle);
 char *s21_strtok(char *str, const char *delim);
 size_t s21_strspn(const char *str1, const char *str2);
 
-#endif
+#endif  // S21_STRING_H
