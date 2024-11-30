@@ -45,7 +45,7 @@ START_TEST(test_memchr_empty_string) {
 }
 END_TEST
 
-/**
+/*
  * test 4: test the s21_memchr function with n = 0 (search length is zero).
  * the function should return NULL as no search can be performed.
  */
