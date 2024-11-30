@@ -37,6 +37,7 @@ char *s21_strncat(char *dest, const char *src, size_t n) {
     dest++;
   while (n--)
     *dest++ = *src++;
+   *dest = '\0'; // Null-terminate
   return ret;
 }
 
@@ -65,6 +66,8 @@ char *s21_strncpy(char *dest, const char *src, size_t n) {
   char *ret = dest;
   while (n--)
     *dest++ = *src++;
+  while (n--)
+    *dest++ = '\0'; // Null-terminate if src is shorter
   return ret;
 }
 
@@ -75,6 +78,17 @@ size_t s21_strcspn(const char *str1, const char *str2) {
     for (size_t i = 0; i < len2; i++)
       if (str2[i] == str1[ret])
         return ret + 1;
+
+  /* suggested 
+  size_t ret = 0;
+    while (str1[ret]) {
+        if (s21_strchr(str2, str1[ret])) {
+            return ret; // Return index of first occurrence
+        }
+        ret++;
+    }
+    return ret;
+  */
   return len1;
 }
 
@@ -100,6 +114,27 @@ char *s21_strrchr(const char *str, int c) {
 }
 
 char *s21_strstr(const char *haystack, const char *needle) {
+  // return NULL if  meedle is an empty string
+if (needle == NULL || *needle == '\0')
+  return NULL;  
+ 
+  size_t len1 = s21_strlen(haystack);
+  size_t len2 = s21_strlen(needle);
+
+for (size_t i = 0; i <= len1-len2; i++) // updated the loop that searches
+  {
+    size_t j = 0;
+    while (j < len2 && haystack[i+j] == needle[j])
+      {
+        j++;
+      }
+    if (j == len2)
+    {
+          return (char *)(haystack + i);
+    }
+  }
+  return NULL;
+  /*
   if (needle) {
     int len1 = s21_strlen(haystack);
     int len2 = s21_strlen(needle);
@@ -115,12 +150,16 @@ char *s21_strstr(const char *haystack, const char *needle) {
       }
     }
   }
+  
   return (char *)haystack;
+*/
 }
 
 char *s21_strtok(char *str, const char *delim) {
   static char *prev;
   char *ret;
+  if (delim == NULL) // added proccessing of a case if delim is NULL
+    ret = NULL;
   if (!str)
     str = prev;
   str += s21_strspn(str, delim);
