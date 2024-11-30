@@ -65,6 +65,12 @@ static const char *parse_flags(const char *format, struct options *opts) {
   }
   if (opts->flag_minus && opts->flag_zero)
     opts->flag_zero = 0;
+
+  if(opts->flag_zero)
+    opts->padding = '0';
+  else
+    opts->padding = ' ';
+
   if (opts->flag_plus && opts->flag_space)
     opts->flag_space = 0;
   return format + len;
@@ -221,7 +227,7 @@ int s21_sprintf(char *str, const char *format, ...) {
     size_t n = s21_strcspn(inp, "%");
     str = s21_memcpy(str, inp, n) + n - 1;
     s21_put_spec(str, &args, &opts);
-    inp = s21_get_spec(NULL, NULL);
+    inp = s21_get_spec(inp, &opts);
   }
   return ret;
 }
