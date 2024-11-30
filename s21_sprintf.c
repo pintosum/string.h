@@ -92,7 +92,8 @@ static const char *parse_precision(const char *format, struct options *opts) {
   if (*format == '.') {
     format++;
     opts->precision = s21_atoi(&format);
-  }
+  } else
+    opts->precision = -1;
   return format;
 }
 
@@ -106,6 +107,13 @@ static const char *parse_type(const char *format, struct options *opts) {
   if (*format == 'c' || *format == 'd' || *format == 'f' || *format == 's' ||
       *format == 'u') {
     opts->type = *format++;
+    if (opts->precision == -1) {
+      if (opts->type == 'f' || opts->type == 'E' || opts->type == 'g' ||
+          opts->type == 'G')
+        opts->precision = 6;
+      else if (opts->precision == -1)
+        opts->precision = 1;
+    }
   }
   return format;
 }
@@ -188,13 +196,18 @@ static char *s21_sputuns(char *dest, unsigned long dec, struct options *opts) {
   for (; (dec /= 10) > 0; len++)
     ;
 
-  for (int c = len; c < opts->width && opts->flag_minus; c++) {
+  int total = opts->precision > len ? opts->precision : len;
+  for (int c = total; c < opts->width && opts->flag_minus; c++) {
     dest[i++] = opts->padding;
   }
 
   do {
     dest[i++] = dec % 10 + '0';
   } while ((dec /= 10) > 0);
+
+  while (i < opts->precision) {
+    dest[i++] = '0';
+  }
 
   while (i < opts->width && !opts->flag_minus) {
     dest[i++] = opts->padding;
@@ -212,15 +225,13 @@ static char *s21_sputuns(char *dest, unsigned long dec, struct options *opts) {
 }
 
 static char *s21_sputfloat(char *dest, double num, struct options *opts) {
-  if (!opts->precision)
-    opts->precision = 6;
 
   return dest;
 }
 
 static char *s21_sputstr(char *dest, const char *src, struct options *opts) {
-  size_t len = s21_strlen(src);
-  size_t i = 0;
+  int len = s21_strlen(src);
+  int i = 0;
   while (i < len && i < opts->precision) {
     *dest++ = *src++;
     i++;
