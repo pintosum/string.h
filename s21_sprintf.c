@@ -113,6 +113,12 @@ static const char *parse_type(const char *format, struct options *opts) {
     else
       opts->padding = ' ';
   }
+  else {
+    opts->type = *format;
+    opts->precision = 1;
+    opts->padding = opts->flag_zero ? '0' : ' ';
+    format++;
+  }
   return format;
 }
 
@@ -137,12 +143,17 @@ static const char *s21_get_spec(const char *format, struct options *opts) {
 }
 
 static char *s21_sputch(char *str, int ch, struct options *opts) {
-  if (opts->flag_minus)
+  if (!opts->width && ch) {
     *str++ = ch;
-  while (opts->width--)
-    *str++ = opts->padding;
-  if (!opts->flag_minus)
-    *str++ = ch;
+  } else {
+    opts->width--;
+    if (opts->flag_minus)
+      *str++ = ch;
+    while (opts->width--)
+      *str++ = opts->padding;
+    if (!opts->flag_minus)
+      *str++ = ch;
+  }
   return str;
 }
 
@@ -284,6 +295,7 @@ static char *s21_put_spec(char *str, va_list *args, struct options *opts) {
     str = s21_sputuns(str, u, opts);
     break;
   default:
+    str = s21_sputch(str, opts->type, opts);
     break;
   }
   *str = 0;
@@ -330,10 +342,12 @@ int s21_sprintf(char *str, const char *format, ...) {
 }
 
 int main() {
-  char str[10];
-  s21_sprintf(str, "hello %cy", 96);
-  char s[10];
-  sprintf(s, "hello %cy", 96);
+  char str[20];
+  s21_memset(str, 0, sizeof(str));
+  s21_sprintf(str, "hello %010m", 96);
+  char s[20];
+  s21_memset(s, 0, sizeof(str));
+  sprintf(s, "hello %010m", 96);
   for (int i = 0; i < sizeof(str); i++)
     printf("%d ", str[i]);
   puts("");
