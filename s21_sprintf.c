@@ -212,8 +212,12 @@ static char *s21_sputdec(char *dest, long dec, struct options *opts) {
 }
 
 static char *s21_sputuns(char *dest, unsigned long dec, struct options *opts) {
-  int i = 0;
 
+  if(opts->len == 'h'){
+    dec &= 65535;
+  }
+
+  int i = 0;
   int len = 1;
   for (long d = dec; (d /= 10) > 0; len++)
     ;
@@ -344,11 +348,11 @@ int s21_sprintf(char *str, const char *format, ...) {
 
 int main() {
   char str[20];
-  s21_memset(str, 0, sizeof(str));
-  s21_sprintf(str, "hello %10.4u", 22);
+  //s21_memset(str, 0, sizeof(str));
+  s21_sprintf(str, "hello %+10.4d", 220000);
   char s[20];
-  s21_memset(s, 0, sizeof(str));
-  sprintf(s, "hello %010.4u", 22);
+  //s21_memset(s, 0, sizeof(str));
+  sprintf(s, "hello %+10.4d", 220000);
   for (int i = 0; i < sizeof(str); i++)
     printf("%d ", str[i]);
   puts("");
