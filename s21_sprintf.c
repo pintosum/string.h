@@ -42,7 +42,6 @@ static int s21_atoi(const char **str) {
 static const char *parse_flags(const char *format, struct options *opts) {
   const char *flags = " -+0#";
   int len = s21_strspn(format, flags);
-  printf("%c\n", *format);
   printf("flags : %d\n", len);
   int i = len;
   while (i) {
@@ -140,7 +139,7 @@ static const char *s21_get_spec(const char *format, struct options *opts) {
 static char *s21_sputch(char *str, int ch, struct options *opts) {
   if (opts->flag_minus)
     *str++ = ch;
-  while (--opts->width)
+  while (opts->width--)
     *str++ = opts->padding;
   if (!opts->flag_minus)
     *str++ = ch;
@@ -243,11 +242,15 @@ static char *s21_sputuns(char *dest, unsigned long dec, struct options *opts) {
 static char *s21_sputstr(char *dest, const char *src, struct options *opts) {
   int len = s21_strlen(src);
   int i = 0;
-  while (i < len && i < opts->precision) {
-    *dest++ = *src++;
-    i++;
+
+  if (opts->type == 's') {
+    len = len > opts->precision ? opts->precision : len;
   }
-  dest[i] = '\0';
+
+  while (i++ < len)
+    *dest++ = *src++;
+
+  *dest = '\0';
   return dest;
 }
 
@@ -283,6 +286,7 @@ static char *s21_put_spec(char *str, va_list *args, struct options *opts) {
   default:
     break;
   }
+  *str = 0;
   return str;
 }
 
@@ -306,16 +310,18 @@ void print_opts(struct options *opts) {
 int s21_sprintf(char *str, const char *format, ...) {
   int ret = 0;
   const char *inp = format;
+  const char *prev = NULL;
   va_list args;
   va_start(args, format);
   struct options opts;
-  s21_get_spec(format, &opts);
+  prev = s21_get_spec(format, &opts);
   print_opts(&opts);
   while (opts.type) {
     size_t n = s21_strcspn(inp, "%");
     str = s21_memcpy(str, inp, n) + n;
     str = s21_put_spec(str, &args, &opts);
-    inp = s21_get_spec(inp, &opts);
+    prev = s21_get_spec(prev, &opts);
+    inp = prev;
   }
   va_end(args);
   s21_memset(&opts, 0, sizeof(struct options));
@@ -325,8 +331,12 @@ int s21_sprintf(char *str, const char *format, ...) {
 
 int main() {
   char str[10];
-  s21_memset(str, 0, 10);
-  s21_sprintf(str, "hello %d", 96);
+  s21_sprintf(str, "hello %cy", 96);
+  char s[10];
+  sprintf(s, "hello %cy", 96);
   for (int i = 0; i < sizeof(str); i++)
     printf("%d ", str[i]);
+  puts("");
+  for (int i = 0; i < sizeof(s); i++)
+    printf("%d ", s[i]);
 }
