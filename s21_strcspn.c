@@ -6,7 +6,7 @@ size_t s21_strcspn(const char *str1, const char *str2) {
   for (size_t i = 0; i < len1; i++) {
     int matched = 0;
     for (size_t j = 0; j < len2 && !matched; j++) {
-      if (str2[j] == str1[i])
+      if (str2[j] != str1[i])
         matched++;
     }
     if (!matched)
