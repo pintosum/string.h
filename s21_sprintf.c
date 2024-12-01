@@ -165,10 +165,11 @@ static char *s21_sputdec(char *dest, long dec, struct options *opts) {
     dec = -dec;
 
   int len = 1;
-  for (; (dec /= 10) > 0; len++)
+  for (long d = dec; (d /= 10) > 0; len++)
     ;
 
   len += sign < 0 || opts->flag_plus || opts->flag_space ? 1 : 0;
+
   int total = opts->precision > len ? opts->precision : len;
   for (int c = total; c < opts->width && opts->flag_minus; c++) {
     dest[i++] = opts->padding;
@@ -214,7 +215,7 @@ static char *s21_sputuns(char *dest, unsigned long dec, struct options *opts) {
   int i = 0;
 
   int len = 1;
-  for (; (dec /= 10) > 0; len++)
+  for (long d = dec; (d /= 10) > 0; len++)
     ;
 
   int total = opts->precision > len ? opts->precision : len;
@@ -344,10 +345,10 @@ int s21_sprintf(char *str, const char *format, ...) {
 int main() {
   char str[20];
   s21_memset(str, 0, sizeof(str));
-  s21_sprintf(str, "hello %010m", 96);
+  s21_sprintf(str, "hello %10.4u", 22);
   char s[20];
   s21_memset(s, 0, sizeof(str));
-  sprintf(s, "hello %010m", 96);
+  sprintf(s, "hello %010.4u", 22);
   for (int i = 0; i < sizeof(str); i++)
     printf("%d ", str[i]);
   puts("");
