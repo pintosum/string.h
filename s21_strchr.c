@@ -1,8 +1,10 @@
-#include "string.h"
+#include "s21_string.h"
 
 char *s21_strchr(const char *str, int c) {
   size_t len = s21_strlen(str);
-  while (len--)
-    if (*str++ == c) return (char *)str;
-  return NULL;
+  char *ret = NULL;
+  while (len-- && !ret)
+    if (*str++ == c)
+      ret = (char *)--str;
+  return ret;
 }

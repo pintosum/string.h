@@ -1,9 +1,10 @@
-#include "string.h"
+#include "s21_string.h"
 
 char *s21_strtok(char *str, const char *delim) {
   static char *prev;
   char *ret;
-  if (!str) str = prev;
+  if (!str)
+    str = prev;
   str += s21_strspn(str, delim);
   if (*str == 0) {
     prev = str;
