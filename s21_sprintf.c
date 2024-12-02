@@ -169,29 +169,34 @@ static char *s21_sputint(char *dest, long dec, struct options *opts) {
     dec &= 0xFFFFFFFF; // nullify all bytes except first 4
 
   int len = 1;
-  for (long d = dec; (d /= 10) > 0; len++)
+  for (long d = dec; (d /= 10) > 0; len++)  // count number length
     ;
 
-  len += sign < 0 || opts->flag_plus || opts->flag_space ? 1 : 0;
+  len += sign < 0 || opts->flag_plus || opts->flag_space ? 1 : 0; // add sign to length
 
-  int total = opts->precision > len ? opts->precision : len;
+  int total = opts->precision > len ? opts->precision : len; // count formatted length
+  // right pad width field
   for (int c = total; c < opts->width && opts->flag_minus; c++) {
     dest[i++] = opts->padding;
     j++;
   }
 
+  // print digits
   do {
     dest[i++] = dec % 10 + '0';
   } while ((dec /= 10) > 0);
 
+  // fill precision field
   while (i - j < opts->precision) {
     dest[i++] = '0';
   }
 
+  // left pad width field (as default) if padding symbol is '0'
   while (i < opts->width && !opts->flag_minus && opts->padding == '0') {
     dest[i++] = opts->padding;
   }
 
+  // print sign of number
   if (sign < 0) {
     dest[i++] = '-';
   } else if (opts->flag_plus) {
@@ -200,19 +205,23 @@ static char *s21_sputint(char *dest, long dec, struct options *opts) {
     dest[i++] = ' ';
   }
 
+  // left pad width field (as default) if padding symbol is ' '
   while (i < opts->width && !opts->flag_minus && opts->padding == ' ') {
     dest[i++] = opts->padding;
   }
 
+  // nullify end of string
   int last_index = i;
   dest[i--] = 0;
 
+  // reverse printed string
   for (int j = 0; j < i; j++, i--) {
     char temp = dest[j];
     dest[j] = dest[i];
     dest[i] = temp;
   }
-  return dest + last_index;
+
+  return dest + last_index; // return pointer to the end of the string
 }
 
 static char *s21_sputuns(char *dest, unsigned long dec, struct options *opts) {
